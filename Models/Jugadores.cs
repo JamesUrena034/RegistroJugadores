@@ -1,17 +1,17 @@
 ﻿using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 
-namespace RegistroJugadores.Models
+namespace RegistroJugadores.Models;
+
+public class Jugadores
 {
-    public class Jugadores
-    {
-        [Key]
-        public int JugadorId { get; set; }
+    [Key]
+    public int JugadorId { get; set; }
 
-        [Required(ErrorMessage = "El campo 'Nombre' es obligario.")]
-        public string Nombres { get; set; }
+    [Required(ErrorMessage = "El campo 'Nombres' es obligatorio.")]
+    public string Nombres { get; set; } = null!;
 
-        [Required(ErrorMessage = "El campo 'Partidas' es obligatorio.")]
-        [Range(0, int.MaxValue, ErrorMessage = "El numero de partida debe ser un valor valido.")]
-        public int Partidas { get; set; }
-    }
+    [Range(1, int.MaxValue, ErrorMessage = "El número de partidas debe ser mayor o igual a 1")]
+    public int Partidas { get; set; }
+
 }
