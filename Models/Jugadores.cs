@@ -13,6 +13,8 @@ public class Jugadores
 
     [Range(1, int.MaxValue, ErrorMessage = "El número de partidas debe ser mayor o igual a 1")]
     public int Partidas { get; set; }
-    public object PartidasGanadas { get; internal set; }
-    public object PartidasJugador1 { get; internal set; }
+    public ICollection<Partidas> PartidasGanadas { get; set; } = new List<Partidas>();
+    public ICollection<Partidas> PartidasJugador1 { get; set; } = new List<Partidas>();
+    public ICollection<Partidas> PartidasJugador2 { get; set; } = new List<Partidas>();
+    public ICollection<Partidas> PartidasTurno { get; set; } = new List<Partidas>();
 }
