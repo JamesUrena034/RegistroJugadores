@@ -9,7 +9,7 @@ namespace RegistroJugadores.Services
     {
         public async Task<bool> Guardar(Partidas partida)
         {
-            if (!await Existe(partida.PartidasId))
+            if (!await Existe(partida.PartidaId))
                 return await Insertar(partida);
             else
                 return await Modificar(partida);
@@ -18,7 +18,7 @@ namespace RegistroJugadores.Services
         public async Task<bool> Existe(int PartidasId)
         {
             await using var contexto = await DbFactory.CreateDbContextAsync();
-            return await contexto.Partidas.AnyAsync(p => p.PartidasId == PartidasId);
+            return await contexto.Partidas.AnyAsync(p => p.PartidaId == PartidasId);
         }
 
         private async Task<bool> Insertar(Partidas partida)
@@ -43,7 +43,7 @@ namespace RegistroJugadores.Services
                 .Include(p => p.Jugador1)
                 .Include(p => p.Jugador2)
                 .Include(p => p.TurnoJugador)
-                .FirstOrDefaultAsync(p => p.PartidasId == PartidasId);
+                .FirstOrDefaultAsync(p => p.PartidaId == PartidasId);
         }
 
         public async Task<bool> Eliminar(int PartidasId)
@@ -51,7 +51,7 @@ namespace RegistroJugadores.Services
             await using var contexto = await DbFactory.CreateDbContextAsync();
             return await contexto.Partidas
                 .AsNoTracking()
-                .Where(p => p.PartidasId == PartidasId)
+                .Where(p => p.PartidaId == PartidasId)
                 .ExecuteDeleteAsync() > 0;
         }
 
