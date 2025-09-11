@@ -20,6 +20,16 @@
                 <ValidationSummary />
 
                 <div class="mb-3">
+                    <label class="form-label">Estado de Partida</label>
+                    <InputSelect class="form-select" @bind-Value="partida.EstadoPartida">
+                        <option value="Iniciada">Iniciada</option>
+                        <option value="En Curso">En Curso</option>
+                        <option value="Finalizada">Finalizada</option>
+                        <option value="Abandonada">Abandonada</option>
+                    </InputSelect>
+                </div>
+
+                <div class="mb-3">
                     <label class="form-label">Jugador 1</label>
                     <InputSelect class="form-select" @bind-Value="partida.Jugador1Id">
                         <option value="0" disabled>Seleccione</option>
@@ -41,6 +51,17 @@
                     </InputSelect>
                 </div>
 
+                <div class="mb-3">
+                    <label class="form-label">Turno Inicial</label>
+                    <InputSelect class="form-select" @bind-Value="partida.TurnoJugadorId">
+                        <option value="0" disabled>Seleccione</option>
+                        @foreach (var j in ListaJugadores)
+                        {
+                            <option value="@j.JugadorId">@j.Nombres</option>
+                        }
+                    </InputSelect>
+                </div>
+
                 <button type="submit" class="btn btn-primary">Guardar</button>
                 <a href="/Partidas/Index" class="btn btn-secondary ms-2">Cancelar</a>
             </EditForm>
@@ -55,6 +76,7 @@
     protected override async Task OnInitializedAsync()
     {
         ListaJugadores = await jugadoresService.Listar(j => j.JugadorId > 0);
+        partida.EstadoPartida = "Iniciada";
     }
 
     private async Task Guardar()
