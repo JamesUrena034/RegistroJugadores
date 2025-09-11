@@ -20,6 +20,16 @@
                 <ValidationSummary />
 
                 <div class="mb-3">
+                    <label class="form-label">Estado de Partida</label>
+                    <InputSelect class="form-select" @bind-Value="partida.EstadoPartida">
+                        <option value="Iniciada">Iniciada</option>
+                        <option value="En Curso">En Curso</option>
+                        <option value="Finalizada">Finalizada</option>
+                        <option value="Abandonada">Abandonada</option>
+                    </InputSelect>
+                </div>
+
+                <div class="mb-3">
                     <label class="form-label">Jugador 1</label>
                     <InputSelect class="form-select" @bind-Value="partida.Jugador1Id">
                         @foreach (var j in ListaJugadores)
@@ -61,6 +71,7 @@
 @code {
     private Partidas partida = new();
     private List<Jugadores> ListaJugadores = new();
+    private string? estadoPartidaOriginal;
 
     [Parameter] public int PartidaId { get; set; }
 
@@ -69,11 +80,24 @@
         ListaJugadores = await jugadoresService.Listar(j => j.JugadorId > 0);
         var encontrada = await partidasService.Buscar(PartidaId);
         if (encontrada != null)
+        {
             partida = encontrada;
+            estadoPartidaOriginal = partida.EstadoPartida;
+        }
     }
 
     private async Task Guardar()
     {
+        if (partida.EstadoPartida == "Finalizada" && estadoPartidaOriginal != "Finalizada")
+        {
+            partida.FechaFin = DateTime.UtcNow;
+        }
+        else if (partida.EstadoPartida != "Finalizada" && estadoPartidaOriginal == "Finalizada")
+        {
+            partida.FechaFin = null;
+            partida.GanadorId = null;
+        }
+
         await partidasService.Guardar(partida);
         navigationManager.NavigateTo("/Partidas/Index");
     }
