@@ -8,7 +8,7 @@ namespace RegistroJugadores.DAL
         public Contexto(DbContextOptions<Contexto> options) : base(options) { }
 
         public DbSet<Jugadores> Jugadores { get; set; }
-        public DbSet<Partidas> Partidas { get; set; }
+        public DbSet<Partidas> Partidas { get; set; } 
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
