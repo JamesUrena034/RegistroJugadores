@@ -1,0 +1,65 @@
+﻿@page "/Partidas/Create"
+@using RegistroJugadores.Models
+@using RegistroJugadores.Services
+
+@inject PartidasService partidasService
+@inject JugadoresService jugadoresService
+@inject NavigationManager navigationManager
+@rendermode InteractiveServer
+
+<PageTitle>Crear Partida</PageTitle>
+
+<div class="container mt-4">
+    <div class="card shadow-lg">
+        <div class="card-header">
+            <h5 class="card-title mb-0">Nueva Partida</h5>
+        </div>
+        <div class="card-body">
+            <EditForm Model="partida" OnValidSubmit="Guardar">
+                <DataAnnotationsValidator />
+                <ValidationSummary />
+
+                <div class="mb-3">
+                    <label class="form-label">Jugador 1</label>
+                    <InputSelect class="form-select" @bind-Value="partida.Jugador1Id">
+                        <option value="0" disabled>Seleccione</option>
+                        @foreach (var j in ListaJugadores)
+                        {
+                            <option value="@j.JugadorId">@j.Nombres</option>
+                        }
+                    </InputSelect>
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label">Jugador 2</label>
+                    <InputSelect class="form-select" @bind-Value="partida.Jugador2Id">
+                        <option value="">Seleccione</option>
+                        @foreach (var j in ListaJugadores)
+                        {
+                            <option value="@j.JugadorId">@j.Nombres</option>
+                        }
+                    </InputSelect>
+                </div>
+
+                <button type="submit" class="btn btn-primary">Guardar</button>
+                <a href="/Partidas/Index" class="btn btn-secondary ms-2">Cancelar</a>
+            </EditForm>
+        </div>
+    </div>
+</div>
+
+@code {
+    private Partidas partida = new();
+    private List<Jugadores> ListaJugadores = new();
+
+    protected override async Task OnInitializedAsync()
+    {
+        ListaJugadores = await jugadoresService.Listar(j => j.JugadorId > 0);
+    }
+
+    private async Task Guardar()
+    {
+        await partidasService.Guardar(partida);
+        navigationManager.NavigateTo("/Partidas/Index");
+    }
+}
