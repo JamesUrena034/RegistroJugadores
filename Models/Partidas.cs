@@ -6,17 +6,20 @@ namespace RegistroJugadores.Models
     public class Partidas
     {
         [Key]
-        public int PartidaId { get; set; }
+        public int PartidasId { get; set; }
 
         public int Jugador1Id { get; set; }
         public int? Jugador2Id { get; set; }
+
+        [Required]
+        [StringLength(20)]
+        public string? EstadoPartida { get; set; }
 
         public int? GanadorId { get; set; }
         public int TurnoJugadorId { get; set; }
 
         public DateTime FechaInicio { get; set; } = DateTime.UtcNow;
         public DateTime? FechaFin { get; set; }
-
 
         [ForeignKey(nameof(Jugador1Id))]
         public virtual Jugadores? Jugador1 { get; set; }
