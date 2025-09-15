@@ -1,5 +1,4 @@
 ﻿using System.ComponentModel.DataAnnotations;
-using System.ComponentModel.DataAnnotations.Schema;
 
 namespace RegistroJugadores.Models;
 
@@ -13,5 +12,4 @@ public class Jugadores
 
     [Range(1, int.MaxValue, ErrorMessage = "El número de partidas debe ser mayor o igual a 1")]
     public int Partidas { get; set; }
-   
 }

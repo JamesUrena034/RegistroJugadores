@@ -8,29 +8,30 @@ namespace RegistroJugadores.Models
         [Key]
         public int PartidasId { get; set; }
 
+        [Required(ErrorMessage = "Jugador 1 es obligatorio")]
         public int Jugador1Id { get; set; }
-        public int? Jugador2Id { get; set; }
 
-        [Required]
-        [StringLength(20)]
-        public string? EstadoPartida { get; set; }
+        [ForeignKey("Jugador1Id")]
+        public Jugadores? Jugador1 { get; set; }
+
+        [Required(ErrorMessage = "Jugador 2 es obligatorio")]
+        public int Jugador2Id { get; set; }
+
+        [ForeignKey("Jugador2Id")]
+        public Jugadores? Jugador2 { get; set; }
 
         public int? GanadorId { get; set; }
+
+        [ForeignKey("GanadorId")]
+        public Jugadores? Ganador { get; set; }
+
+        [Required(ErrorMessage = "El turno es obligatorio")]
         public int TurnoJugadorId { get; set; }
 
-        public DateTime FechaInicio { get; set; } = DateTime.UtcNow;
-        public DateTime? FechaFin { get; set; }
+        [ForeignKey("TurnoJugadorId")]
+        public Jugadores? TurnoJugador { get; set; }
 
-        [ForeignKey(nameof(Jugador1Id))]
-        public virtual Jugadores? Jugador1 { get; set; }
-
-        [ForeignKey(nameof(Jugador2Id))]
-        public virtual Jugadores? Jugador2 { get; set; }
-
-        [ForeignKey(nameof(GanadorId))]
-        public virtual Jugadores? Ganador { get; set; }
-
-        [ForeignKey(nameof(TurnoJugadorId))]
-        public virtual Jugadores? TurnoJugador { get; set; }
+        [Required(ErrorMessage = "El estado de la partida es obligatorio")]
+        public string EstadoPartida { get; set; } = string.Empty;
     }
 }
