@@ -19,11 +19,13 @@ namespace RegistroJugadores.Models
 
         [ForeignKey("Jugador2Id")]
         public Jugadores? Jugador2 { get; set; }
-
+         
         public int? GanadorId { get; set; }
 
         [ForeignKey("GanadorId")]
         public Jugadores? Ganador { get; set; }
+        public DateTime FechaInicio { get; set; } = DateTime.UtcNow;
+        public DateTime? FechaFin { get; set; }
 
         [Required(ErrorMessage = "El turno es obligatorio")]
         public int TurnoJugadorId { get; set; }
