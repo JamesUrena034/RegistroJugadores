@@ -119,6 +119,7 @@ else
         if (Jugador != null)
         {
             var modificado = await jugadoresService.Guardar(Jugador);
+
             if (modificado)
             {
                 navigationManager.NavigateTo("/Jugadores/Index");
