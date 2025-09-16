@@ -15,6 +15,7 @@ namespace RegistroJugadores.Services
                 return await Modificar(jugador);
         }
 
+
         public async Task<bool> Existe(int JugadorId)
         {
             await using var contexto = await DbFactory.CreateDbContextAsync();
