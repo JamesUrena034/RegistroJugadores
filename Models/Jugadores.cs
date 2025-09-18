@@ -12,6 +12,8 @@ public class Jugadores
 
     [Range(1, int.MaxValue, ErrorMessage = "El número de partidas debe ser mayor o igual a 1")]
     public int Victorias { get; set; }
-    public int Derrotas { get; set; }
-    public int Empates { get; set; }
+    public int Empates { get; set;} 
+    public int Derrotas { get; set;}
+   
+
 }

@@ -9,8 +9,9 @@ namespace RegistroJugadores.Services
     {
         public async Task<bool> Guardar(Partidas partida)
         {
-            if (partida.Jugador1Id == partida.Jugador2Id)
-                throw new ArgumentException("Jugador1 y Jugador2 no pueden ser iguales.");
+            if(partida.Jugador1Id == partida.Jugador2Id)
+                throw new ArgumentException("Jugador1Id y Jugador2Id no pueden ser iguales ");
+
 
             if (string.IsNullOrEmpty(partida.EstadoPartida))
                 throw new ArgumentException("El esta de la partida es  obligatorio.");
@@ -37,6 +38,7 @@ namespace RegistroJugadores.Services
         private async Task<bool> Modificar(Partidas partida)
         {
             await using var contexto = await DbFactory.CreateDbContextAsync();
+
             contexto.Update(partida);
             return await contexto.SaveChangesAsync() > 0;
         }
