@@ -12,6 +12,10 @@ namespace RegistroJugadores.Services
             if(partida.Jugador1Id == partida.Jugador2Id)
                 throw new ArgumentException("Jugador1Id y Jugador2Id no pueden ser iguales ");
 
+
+            if (string.IsNullOrEmpty(partida.EstadoPartida))
+                throw new ArgumentException("El esta de la partida es  obligatorio.");
+
             if (!await Existe(partida.PartidasId))
                 return await Insertar(partida);
             else

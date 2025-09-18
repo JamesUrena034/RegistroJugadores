@@ -10,14 +10,11 @@ namespace RegistroJugadores.Services
         public async Task<bool> Guardar(Jugadores jugador)
         {
             if (!await Existe(jugador.JugadorId))
-            {
                 return await Insertar(jugador);
-            }
             else
-            {
                 return await Modificar(jugador);
-            }
         }
+
 
         public async Task<bool> Existe(int JugadorId)
         {
@@ -54,13 +51,19 @@ namespace RegistroJugadores.Services
         public async Task<bool> Eliminar(int JugadorId)
         {
             await using var contexto = await DbFactory.CreateDbContextAsync();
-            return await contexto.Jugadores.AsNoTracking().Where(j => j.JugadorId == JugadorId).ExecuteDeleteAsync() > 0;
+            return await contexto.Jugadores
+                .AsNoTracking()
+                .Where(j => j.JugadorId == JugadorId)
+                .ExecuteDeleteAsync() > 0;
         }
 
         public async Task<List<Jugadores>> Listar(Expression<Func<Jugadores, bool>> criterio)
         {
             await using var contexto = await DbFactory.CreateDbContextAsync();
-            return await contexto.Jugadores.Where(criterio).AsNoTracking().ToListAsync();
+            return await contexto.Jugadores
+                .Where(criterio)
+                .AsNoTracking()
+                .ToListAsync();
         }
     }
 }

@@ -6,11 +6,27 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace RegistroJugadores.Migrations
 {
     /// <inheritdoc />
-    public partial class AgregandoModeloPartida : Migration
+    public partial class Iniciando : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
         {
+            migrationBuilder.CreateTable(
+                name: "Jugadores",
+                columns: table => new
+                {
+                    JugadorId = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    Nombres = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    Victorias = table.Column<int>(type: "int", nullable: false),
+                    Derrotas = table.Column<int>(type: "int", nullable: false),
+                    Empates = table.Column<int>(type: "int", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Jugadores", x => x.JugadorId);
+                });
+
             migrationBuilder.CreateTable(
                 name: "Partidas",
                 columns: table => new
@@ -18,16 +34,12 @@ namespace RegistroJugadores.Migrations
                     PartidasId = table.Column<int>(type: "int", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
                     Jugador1Id = table.Column<int>(type: "int", nullable: false),
-                    Jugador2Id = table.Column<int>(type: "int", nullable: true),
-                    EstadoPartida = table.Column<string>(type: "nvarchar(20)", maxLength: 20, nullable: false),
+                    Jugador2Id = table.Column<int>(type: "int", nullable: false),
                     GanadorId = table.Column<int>(type: "int", nullable: true),
-                    TurnoJugadorId = table.Column<int>(type: "int", nullable: false),
                     FechaInicio = table.Column<DateTime>(type: "datetime2", nullable: false),
                     FechaFin = table.Column<DateTime>(type: "datetime2", nullable: true),
-                    JugadoresJugadorId = table.Column<int>(type: "int", nullable: true),
-                    JugadoresJugadorId1 = table.Column<int>(type: "int", nullable: true),
-                    JugadoresJugadorId2 = table.Column<int>(type: "int", nullable: true),
-                    JugadoresJugadorId3 = table.Column<int>(type: "int", nullable: true)
+                    TurnoJugadorId = table.Column<int>(type: "int", nullable: false),
+                    EstadoPartida = table.Column<string>(type: "nvarchar(max)", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -50,26 +62,6 @@ namespace RegistroJugadores.Migrations
                         principalTable: "Jugadores",
                         principalColumn: "JugadorId",
                         onDelete: ReferentialAction.Restrict);
-                    table.ForeignKey(
-                        name: "FK_Partidas_Jugadores_JugadoresJugadorId",
-                        column: x => x.JugadoresJugadorId,
-                        principalTable: "Jugadores",
-                        principalColumn: "JugadorId");
-                    table.ForeignKey(
-                        name: "FK_Partidas_Jugadores_JugadoresJugadorId1",
-                        column: x => x.JugadoresJugadorId1,
-                        principalTable: "Jugadores",
-                        principalColumn: "JugadorId");
-                    table.ForeignKey(
-                        name: "FK_Partidas_Jugadores_JugadoresJugadorId2",
-                        column: x => x.JugadoresJugadorId2,
-                        principalTable: "Jugadores",
-                        principalColumn: "JugadorId");
-                    table.ForeignKey(
-                        name: "FK_Partidas_Jugadores_JugadoresJugadorId3",
-                        column: x => x.JugadoresJugadorId3,
-                        principalTable: "Jugadores",
-                        principalColumn: "JugadorId");
                     table.ForeignKey(
                         name: "FK_Partidas_Jugadores_TurnoJugadorId",
                         column: x => x.TurnoJugadorId,
@@ -94,26 +86,6 @@ namespace RegistroJugadores.Migrations
                 column: "Jugador2Id");
 
             migrationBuilder.CreateIndex(
-                name: "IX_Partidas_JugadoresJugadorId",
-                table: "Partidas",
-                column: "JugadoresJugadorId");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_Partidas_JugadoresJugadorId1",
-                table: "Partidas",
-                column: "JugadoresJugadorId1");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_Partidas_JugadoresJugadorId2",
-                table: "Partidas",
-                column: "JugadoresJugadorId2");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_Partidas_JugadoresJugadorId3",
-                table: "Partidas",
-                column: "JugadoresJugadorId3");
-
-            migrationBuilder.CreateIndex(
                 name: "IX_Partidas_TurnoJugadorId",
                 table: "Partidas",
                 column: "TurnoJugadorId");
@@ -124,6 +96,9 @@ namespace RegistroJugadores.Migrations
         {
             migrationBuilder.DropTable(
                 name: "Partidas");
+
+            migrationBuilder.DropTable(
+                name: "Jugadores");
         }
     }
 }

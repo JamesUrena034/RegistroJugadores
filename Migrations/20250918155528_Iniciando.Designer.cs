@@ -12,8 +12,8 @@ using RegistroJugadores.DAL;
 namespace RegistroJugadores.Migrations
 {
     [DbContext(typeof(Contexto))]
-    [Migration("20250911214957_AgregandoEstadoPartida")]
-    partial class AgregandoEstadoPartida
+    [Migration("20250918155528_Iniciando")]
+    partial class Iniciando
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -33,11 +33,17 @@ namespace RegistroJugadores.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("JugadorId"));
 
+                    b.Property<int>("Derrotas")
+                        .HasColumnType("int");
+
+                    b.Property<int>("Empates")
+                        .HasColumnType("int");
+
                     b.Property<string>("Nombres")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<int>("Partidas")
+                    b.Property<int>("Victorias")
                         .HasColumnType("int");
 
                     b.HasKey("JugadorId");
@@ -55,8 +61,7 @@ namespace RegistroJugadores.Migrations
 
                     b.Property<string>("EstadoPartida")
                         .IsRequired()
-                        .HasMaxLength(20)
-                        .HasColumnType("nvarchar(20)");
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<DateTime?>("FechaFin")
                         .HasColumnType("datetime2");
@@ -70,7 +75,7 @@ namespace RegistroJugadores.Migrations
                     b.Property<int>("Jugador1Id")
                         .HasColumnType("int");
 
-                    b.Property<int?>("Jugador2Id")
+                    b.Property<int>("Jugador2Id")
                         .HasColumnType("int");
 
                     b.Property<int>("TurnoJugadorId")
@@ -105,7 +110,8 @@ namespace RegistroJugadores.Migrations
                     b.HasOne("RegistroJugadores.Models.Jugadores", "Jugador2")
                         .WithMany()
                         .HasForeignKey("Jugador2Id")
-                        .OnDelete(DeleteBehavior.Restrict);
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
 
                     b.HasOne("RegistroJugadores.Models.Jugadores", "TurnoJugador")
                         .WithMany()

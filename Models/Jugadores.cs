@@ -1,5 +1,4 @@
 ﻿using System.ComponentModel.DataAnnotations;
-using System.ComponentModel.DataAnnotations.Schema;
 
 namespace RegistroJugadores.Models;
 
@@ -16,4 +15,5 @@ public class Jugadores
     public int Empates { get; set;} 
     public int Derrotas { get; set;}
    
+
 }

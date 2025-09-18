@@ -1,4 +1,4 @@
-﻿@page "/Partidas/Create"
+﻿@page "/Victorias/Create"
 @using RegistroJugadores.Models
 @using RegistroJugadores.Services
 
@@ -9,15 +9,14 @@
 
 <PageTitle>Crear Partida</PageTitle>
 
-<div class="container mt-4">
-    <div class="card shadow-lg">
-        <div class="card-header">
-            <h5 class="card-title mb-0">Nueva Partida</h5>
-        </div>
-        <div class="card-body">
-            <EditForm Model="partida" OnValidSubmit="Guardar">
-                <DataAnnotationsValidator />
-                <ValidationSummary />
+<EditForm Model="partida" OnValidSubmit="Guardar">
+    <div class="container">
+        <div class="card shadow-lg">
+            <div class="card-header text-center">
+                <h5 class="card-title">Nueva Partida</h5>
+            </div>
+
+            <div class="card-body">
 
                 <div class="mb-3">
                     <label class="form-label">Estado de Partida</label>
@@ -62,12 +61,14 @@
                     </InputSelect>
                 </div>
 
-                <button type="submit" class="btn btn-primary">Guardar</button>
-                <a href="/Partidas/Index" class="btn btn-secondary ms-2">Cancelar</a>
-            </EditForm>
+                <div class="card-footer text-center mt-2">
+                    <a href="/Partidas/Index" class="btn btn-secondary"> <span class="bi bi-arrow-left"></span> Volver</a>
+                    <button type="submit" class="btn btn-primary bi bi-floppy"> Guardar</button>
+                </div>
+            </div>
         </div>
     </div>
-</div>
+</EditForm>
 
 @code {
     private Partidas partida = new();
