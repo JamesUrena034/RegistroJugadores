@@ -1,4 +1,5 @@
 ﻿using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace RegistroJugadores.Models
 {
@@ -6,11 +7,33 @@ namespace RegistroJugadores.Models
     {
         [Key]
         public int PartidasId { get; set; }
-        [Range(1, int.MaxValue, ErrorMessage = "Debe Seleccionar un Jugador Valido")]
-        public int JugadorId { get; set; }
-        public int? Jugador2Id { get; set; }
-        [Required(ErrorMessage = " Debe Espeficicar el Estado ")]
 
+        [Required(ErrorMessage = "Jugador 1 es obligatorio")]
+        public int Jugador1Id { get; set; }
 
+        [ForeignKey("Jugador1Id")]
+        public Jugadores? Jugador1 { get; set; }
+
+        [Required(ErrorMessage = "Jugador 2 es obligatorio")]
+        public int Jugador2Id { get; set; }
+
+        [ForeignKey("Jugador2Id")]
+        public Jugadores? Jugador2 { get; set; }
+         
+        public int? GanadorId { get; set; }
+
+        [ForeignKey("GanadorId")]
+        public Jugadores? Ganador { get; set; }
+        public DateTime FechaInicio { get; set; } = DateTime.UtcNow;
+        public DateTime? FechaFin { get; set; }
+
+        [Required(ErrorMessage = "El turno es obligatorio")]
+        public int TurnoJugadorId { get; set; }
+
+        [ForeignKey("TurnoJugadorId")]
+        public Jugadores? TurnoJugador { get; set; }
+
+        [Required(ErrorMessage = "El estado de la partida es obligatorio")]
+        public string EstadoPartida { get; set; } = string.Empty;
     }
 }

@@ -1,0 +1,193 @@
+﻿@page "/Victorias/Edit/{PartidaId:int}"
+@using RegistroJugadores.Models
+@using RegistroJugadores.Services
+
+@inject PartidasService partidasService
+@inject JugadoresService jugadoresService
+@inject NavigationManager navigationManager
+@rendermode InteractiveServer
+
+<PageTitle>Editar Partida</PageTitle>
+
+@if (partida == null)
+{
+    <p><em>Cargando datos de la partida...</em></p>
+}
+else
+{
+    <div class="container mt-4">
+        <div class="card shadow-lg">
+            <div class="card-header text-center bg-primary text-white border-bottom-0">
+                <h5 class="card-title">Modificar Partida</h5>
+            </div>
+            <div class="card-body">
+                <EditForm Model="partida" OnValidSubmit="Modificar">
+                    <DataAnnotationsValidator />
+                    <ValidationSummary />
+
+                    <div class="mb-3">
+                        <label class="form-label">Estado de Partida</label>
+                        <InputSelect class="form-select" @bind-Value="partida.EstadoPartida">
+                            <option value="Iniciada">Iniciada</option>
+                            <option value="En Curso">En Curso</option>
+                            <option value="Finalizada">Finalizada</option>
+                            <option value="Abandonada">Abandonada</option>
+                        </InputSelect>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Jugador 1</label>
+                        <InputSelect class="form-select" @bind-Value="partida.Jugador1Id">
+                            @foreach (var j in ListaJugadores)
+                            {
+                                <option value="@j.JugadorId">@j.Nombres</option>
+                            }
+                        </InputSelect>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Jugador 2</label>
+                        <InputSelect class="form-select" @bind-Value="partida.Jugador2Id">
+                            <option value="">Seleccione</option>
+                            @foreach (var j in ListaJugadores)
+                            {
+                                <option value="@j.JugadorId">@j.Nombres</option>
+                            }
+                        </InputSelect>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Ganador</label>
+                        <InputSelect class="form-select" @bind-Value="partida.GanadorId">
+                            <option value="">Seleccione</option>
+                            @foreach (var j in ListaJugadores)
+                            {
+                                <option value="@j.JugadorId">@j.Nombres</option>
+                            }
+                        </InputSelect>
+                    </div>
+
+                    <div class="card-footer d-flex justify-content-center mt-2">
+                        <div class="btn-group" role="group">
+                            <a href="/Partidas/Index" class="btn btn-outline-secondary">
+                                <i class="bi bi-box-arrow-left"></i> Volver
+                            </a>
+                            <button type="submit" class="btn btn-outline-success">
+                                <i class="bi bi-pencil"></i> Modificar
+                            </button>
+                            <button type="button" class="btn btn-danger" @onclick="() => MostrarModalEliminar = true">
+                                <i class="bi bi-trash"></i> Eliminar
+                            </button>
+                        </div>
+                    </div>
+                </EditForm>
+            </div>
+        </div>
+    </div>
+
+    @if (MostrarModalEliminar)
+    {
+        <div class="modal fade show d-block" tabindex="-1" style="background-color: rgba(0,0,0,0.5);">
+            <div class="modal-dialog modal-dialog-centered">
+                <div class="modal-content shadow">
+                    <div class="modal-header bg-danger text-white text-center">
+                        <h5 class="modal-title">Eliminar Partida</h5>
+                        <button type="button" class="btn-close" @onclick="CerrarModalEliminar"></button>
+                    </div>
+                    <div class="modal-body text-danger">
+                        <p>¿Estás seguro que deseas eliminar esta partida?</p>
+                    </div>
+                    <div class="card-header">
+                        <h5 class="card-title text-center"><strong>Datos de la Partida</strong></h5>
+                    </div>
+                    <div class="mb-3 ms-3">
+                        <p><strong>Partida Id:</strong> @partida.PartidasId</p>
+                        <p><strong>Jugador 1:</strong> @partida.Jugador1?.Nombres</p>
+                        <p><strong>Jugador 2:</strong> @partida.Jugador2?.Nombres</p>
+                        <p><strong>Fecha de Inicio:</strong> @partida.FechaInicio.ToString("dd/MM/yyyy HH:mm")</p>
+                    </div>
+                    <div class="modal-footer d-flex justify-content-center">
+                        <div class="btn-group" role="group">
+                            <button class="btn btn-outline-secondary" @onclick="CerrarModalEliminar">
+                                <i class="bi bi-box-arrow-left"></i> Volver
+                            </button>
+                            <button class="btn btn-outline-danger" @onclick="EliminarPartida">
+                                <i class="bi bi-trash"></i> Eliminar
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    }
+}
+
+<div class="text-center mt-2 text-danger">@Mensaje</div>
+
+@code {
+    private Partidas partida = new();
+    private List<Jugadores> ListaJugadores = new();
+    private string? estadoPartidaOriginal;
+    private bool MostrarModalEliminar = false;
+    private string Mensaje = string.Empty;
+
+    [Parameter] public int PartidaId { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        ListaJugadores = await jugadoresService.Listar(j => j.JugadorId > 0);
+        var encontrada = await partidasService.Buscar(PartidaId);
+        if (encontrada != null)
+        {
+            partida = encontrada;
+            estadoPartidaOriginal = partida.EstadoPartida;
+        }
+        else
+        {
+            Mensaje = $"Partida con ID {PartidaId} no encontrada.";
+            navigationManager.NavigateTo("/Victorias/Index");
+        }
+    }
+
+    private async Task Modificar()
+    {
+        if (partida.EstadoPartida == "Finalizada" && estadoPartidaOriginal != "Finalizada")
+        {
+            partida.FechaFin = DateTime.UtcNow;
+        }
+        else if (partida.EstadoPartida != "Finalizada" && estadoPartidaOriginal == "Finalizada")
+        {
+            partida.FechaFin = null;
+            partida.GanadorId = null;
+        }
+
+        var modificado = await partidasService.Guardar(partida);
+        if (modificado)
+        {
+            navigationManager.NavigateTo("/Victorias/Index");
+        }
+        else
+        {
+            Mensaje = "No se pudo modificar la partida.";
+        }
+    }
+
+    private void CerrarModalEliminar()
+    {
+        MostrarModalEliminar = false;
+    }
+
+    private async Task EliminarPartida()
+    {
+        var eliminado = await partidasService.Eliminar(partida.PartidasId);
+        if (eliminado)
+        {
+            navigationManager.NavigateTo("/Victorias/Index");
+        }
+        else
+        {
+            Mensaje = "No se pudo eliminar la partida.";
+        }
+        MostrarModalEliminar = false;
+    }
+}

@@ -1,0 +1,88 @@
+﻿@page "/Victorias/Create"
+@using RegistroJugadores.Models
+@using RegistroJugadores.Services
+
+@inject PartidasService partidasService
+@inject JugadoresService jugadoresService
+@inject NavigationManager navigationManager
+@rendermode InteractiveServer
+
+<PageTitle>Crear Partida</PageTitle>
+
+<EditForm Model="partida" OnValidSubmit="Guardar">
+    <div class="container">
+        <div class="card shadow-lg">
+            <div class="card-header text-center">
+                <h5 class="card-title">Nueva Partida</h5>
+            </div>
+
+            <div class="card-body">
+
+                <div class="mb-3">
+                    <label class="form-label">Estado de Partida</label>
+                    <InputSelect class="form-select" @bind-Value="partida.EstadoPartida">
+                        <option value="Iniciada">Iniciada</option>
+                        <option value="En Curso">En Curso</option>
+                        <option value="Finalizada">Finalizada</option>
+                        <option value="Abandonada">Abandonada</option>
+                    </InputSelect>
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label">Jugador 1</label>
+                    <InputSelect class="form-select" @bind-Value="partida.Jugador1Id">
+                        <option value="0" disabled>Seleccione</option>
+                        @foreach (var j in ListaJugadores)
+                        {
+                            <option value="@j.JugadorId">@j.Nombres</option>
+                        }
+                    </InputSelect>
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label">Jugador 2</label>
+                    <InputSelect class="form-select" @bind-Value="partida.Jugador2Id">
+                        <option value="">Seleccione</option>
+                        @foreach (var j in ListaJugadores)
+                        {
+                            <option value="@j.JugadorId">@j.Nombres</option>
+                        }
+                    </InputSelect>
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label">Turno Inicial</label>
+                    <InputSelect class="form-select" @bind-Value="partida.TurnoJugadorId">
+                        <option value="0" disabled>Seleccione</option>
+                        @foreach (var j in ListaJugadores)
+                        {
+                            <option value="@j.JugadorId">@j.Nombres</option>
+                        }
+                    </InputSelect>
+                </div>
+
+                <div class="card-footer text-center mt-2">
+                    <a href="/Partidas/Index" class="btn btn-secondary"> <span class="bi bi-arrow-left"></span> Volver</a>
+                    <button type="submit" class="btn btn-primary bi bi-floppy"> Guardar</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</EditForm>
+
+@code {
+    private Partidas partida = new();
+    private List<Jugadores> ListaJugadores = new();
+
+    protected override async Task OnInitializedAsync()
+    {
+        ListaJugadores = await jugadoresService.Listar(j => j.JugadorId > 0);
+        partida.EstadoPartida = "Iniciada";
+    }
+
+    private async Task Guardar()
+    {
+        await partidasService.Guardar(partida);
+        navigationManager.NavigateTo("/Partidas/Index");
+    }
+}
