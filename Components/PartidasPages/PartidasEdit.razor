@@ -1,4 +1,4 @@
-﻿@page "/Partidas/Edit/{PartidaId:int}"
+﻿@page "/Victorias/Edit/{PartidaId:int}"
 @using RegistroJugadores.Models
 @using RegistroJugadores.Services
 
@@ -145,7 +145,7 @@ else
         else
         {
             Mensaje = $"Partida con ID {PartidaId} no encontrada.";
-            navigationManager.NavigateTo("/Partidas/Index");
+            navigationManager.NavigateTo("/Victorias/Index");
         }
     }
 
@@ -164,7 +164,7 @@ else
         var modificado = await partidasService.Guardar(partida);
         if (modificado)
         {
-            navigationManager.NavigateTo("/Partidas/Index");
+            navigationManager.NavigateTo("/Victorias/Index");
         }
         else
         {
@@ -182,7 +182,7 @@ else
         var eliminado = await partidasService.Eliminar(partida.PartidasId);
         if (eliminado)
         {
-            navigationManager.NavigateTo("/Partidas/Index");
+            navigationManager.NavigateTo("/Victorias/Index");
         }
         else
         {
