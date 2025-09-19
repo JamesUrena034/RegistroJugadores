@@ -43,9 +43,10 @@
                     <tr>
                         <th>JugadorId</th>
                         <th>Nombres</th>
-                        <th>Partidas</th>
+                        <th>Victorias</th>
+                        <th>Empates</th>
+                        <th>Derrotas</th>
                         <th>Editar</th>
-                        <th>Eliminar</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -55,21 +56,21 @@
                             <td>@jugador.JugadorId</td>
                             <td>@jugador.Nombres</td>
                             <td>@jugador.Victorias</td>
+							<td>@jugador.Empates</td>
+							<td>@jugador.Derrotas</td>
                             <td class="text-center">
                                 <a href="/Jugadores/Edit/@jugador.JugadorId" class="btn btn-outline-primary btn-sm">
                                     <i class="bi bi-pencil"></i>
                                 </a>
-                            </td>
-                            <td class="text-center">
-                                <button class="btn btn-outline-danger btn-sm" @onclick="() => Eliminar(jugador.JugadorId)">
-                                    <i class="bi bi-trash"></i>
-                                </button>
                             </td>
                         </tr>
                     }
                 </tbody>
             </table>
         </div>
+        <div class="card-footer">
+			<label>Cantidad: @ListaJugadores.Count()</label>
+		</div>
     </div>
 </div>
 
@@ -96,11 +97,5 @@
         {
             ListaJugadores = await jugadoresService.Listar(j => j.JugadorId > 0);
         }
-    }
-
-    private async Task Eliminar(int jugadorId)
-    {
-        await jugadoresService.Eliminar(jugadorId);
-        ListaJugadores = await jugadoresService.Listar(j => j.JugadorId > 0);
     }
 }
