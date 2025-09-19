@@ -11,10 +11,9 @@ public class Jugadores
     [Required(ErrorMessage = "El campo 'Nombres' es obligatorio.")]
     public string Nombres { get; set; } = null!;
 
-    [Range(1, int.MaxValue, ErrorMessage = "El número de partidas debe ser mayor o igual a 1")]
-    public int Victorias { get; set; }
-    public int Derrotas { get; set; }
-    public int Empates { get; set; }
+    public int Victorias { get; set; } = 0;
+    public int Derrotas { get; set; } = 0;
+    public int Empates { get; set; } = 0;
 
     [InverseProperty(nameof(Models.Movimientos.Jugadores))]
     public virtual ICollection<Movimientos> Movimientos { get; set; } = new List<Movimientos>();
