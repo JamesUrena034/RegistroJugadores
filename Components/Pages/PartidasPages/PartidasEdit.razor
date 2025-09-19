@@ -1,4 +1,4 @@
-﻿@page "/Victorias/Edit/{PartidaId:int}"
+﻿@page "/Partidas/Edit/{PartidaId:int}"
 @using RegistroJugadores.Models
 @using RegistroJugadores.Services
 
@@ -101,7 +101,7 @@ else
                         <h5 class="card-title text-center"><strong>Datos de la Partida</strong></h5>
                     </div>
                     <div class="mb-3 ms-3">
-                        <p><strong>Partida Id:</strong> @partida.PartidasId</p>
+                        <p><strong>Partida Id:</strong> @partida.PartidaId</p>
                         <p><strong>Jugador 1:</strong> @partida.Jugador1?.Nombres</p>
                         <p><strong>Jugador 2:</strong> @partida.Jugador2?.Nombres</p>
                         <p><strong>Fecha de Inicio:</strong> @partida.FechaInicio.ToString("dd/MM/yyyy HH:mm")</p>
@@ -145,7 +145,7 @@ else
         else
         {
             Mensaje = $"Partida con ID {PartidaId} no encontrada.";
-            navigationManager.NavigateTo("/Victorias/Index");
+            navigationManager.NavigateTo("/Partidas/Index");
         }
     }
 
@@ -164,7 +164,7 @@ else
         var modificado = await partidasService.Guardar(partida);
         if (modificado)
         {
-            navigationManager.NavigateTo("/Victorias/Index");
+            navigationManager.NavigateTo("/Partidas/Index");
         }
         else
         {
@@ -179,10 +179,10 @@ else
 
     private async Task EliminarPartida()
     {
-        var eliminado = await partidasService.Eliminar(partida.PartidasId);
+        var eliminado = await partidasService.Eliminar(partida.PartidaId);
         if (eliminado)
         {
-            navigationManager.NavigateTo("/Victorias/Index");
+            navigationManager.NavigateTo("/Partidas/Index");
         }
         else
         {

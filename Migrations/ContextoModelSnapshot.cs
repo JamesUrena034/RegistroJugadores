@@ -48,17 +48,55 @@ namespace RegistroJugadores.Migrations
                     b.ToTable("Jugadores");
                 });
 
-            modelBuilder.Entity("RegistroJugadores.Models.Partidas", b =>
+            modelBuilder.Entity("RegistroJugadores.Models.Movimientos", b =>
                 {
-                    b.Property<int>("PartidasId")
+                    b.Property<int>("MovimientoId")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("int");
 
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("PartidasId"));
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("MovimientoId"));
+
+                    b.Property<DateTime>("FechaMovimiento")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int>("JugadorId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("PartidaId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("PosicionColumna")
+                        .HasColumnType("int");
+
+                    b.Property<int>("PosicionFila")
+                        .HasColumnType("int");
+
+                    b.HasKey("MovimientoId");
+
+                    b.HasIndex("JugadorId");
+
+                    b.HasIndex("PartidaId");
+
+                    b.ToTable("Movimientos");
+                });
+
+            modelBuilder.Entity("RegistroJugadores.Models.Partidas", b =>
+                {
+                    b.Property<int>("PartidaId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("PartidaId"));
 
                     b.Property<string>("EstadoPartida")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasMaxLength(20)
+                        .HasColumnType("nvarchar(20)");
+
+                    b.Property<string>("EstadoTablero")
+                        .IsRequired()
+                        .HasMaxLength(9)
+                        .HasColumnType("nvarchar(9)");
 
                     b.Property<DateTime?>("FechaFin")
                         .HasColumnType("datetime2");
@@ -78,7 +116,7 @@ namespace RegistroJugadores.Migrations
                     b.Property<int>("TurnoJugadorId")
                         .HasColumnType("int");
 
-                    b.HasKey("PartidasId");
+                    b.HasKey("PartidaId");
 
                     b.HasIndex("GanadorId");
 
@@ -89,6 +127,25 @@ namespace RegistroJugadores.Migrations
                     b.HasIndex("TurnoJugadorId");
 
                     b.ToTable("Partidas");
+                });
+
+            modelBuilder.Entity("RegistroJugadores.Models.Movimientos", b =>
+                {
+                    b.HasOne("RegistroJugadores.Models.Jugadores", "Jugadores")
+                        .WithMany("Movimientos")
+                        .HasForeignKey("JugadorId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("RegistroJugadores.Models.Partidas", "Partidas")
+                        .WithMany("Movimientos")
+                        .HasForeignKey("PartidaId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Jugadores");
+
+                    b.Navigation("Partidas");
                 });
 
             modelBuilder.Entity("RegistroJugadores.Models.Partidas", b =>
@@ -123,6 +180,16 @@ namespace RegistroJugadores.Migrations
                     b.Navigation("Jugador2");
 
                     b.Navigation("TurnoJugador");
+                });
+
+            modelBuilder.Entity("RegistroJugadores.Models.Jugadores", b =>
+                {
+                    b.Navigation("Movimientos");
+                });
+
+            modelBuilder.Entity("RegistroJugadores.Models.Partidas", b =>
+                {
+                    b.Navigation("Movimientos");
                 });
 #pragma warning restore 612, 618
         }

@@ -1,4 +1,4 @@
-﻿@page "/Victorias/Index"
+﻿@page "/Partidas/Index"
 @using RegistroJugadores.Models
 @using RegistroJugadores.Services
 
@@ -59,7 +59,7 @@
                     @foreach (var partida in ListaPartidas)
                     {
                         <tr>
-                            <td>@partida.PartidasId</td>
+                            <td>@partida.PartidaId</td>
                             <td>@partida.Jugador1?.Nombres</td>
                             <td>@partida.Jugador2?.Nombres</td>
                             <td>@partida.EstadoPartida</td>
@@ -67,12 +67,12 @@
                             <td>@partida.FechaInicio.ToString("dd/MM/yyyy HH:mm")</td>
                             <td>@(partida.FechaFin?.ToString("dd/MM/yyyy HH:mm") ?? "En curso")</td>
                             <td class="text-center">
-                                <a href="/Partidas/Edit/@partida.PartidasId" class="btn btn-outline-primary btn-sm">
+                                <a href="/Partidas/Edit/@partida.PartidaId" class="btn btn-outline-primary btn-sm">
                                     <i class="bi bi-pencil"></i>
                                 </a>
                             </td>
                             <td class="text-center">
-                                <button class="btn btn-outline-danger btn-sm" @onclick="() => Eliminar(partida.PartidasId)">
+                                <button class="btn btn-outline-danger btn-sm" @onclick="() => Eliminar(partida.PartidaId)">
                                     <i class="bi bi-trash"></i>
                                 </button>
                             </td>
@@ -91,15 +91,15 @@
 
     protected override async Task OnInitializedAsync()
     {
-        ListaPartidas = await partidasService.Listar(p => p.PartidasId > 0);
+        ListaPartidas = await partidasService.Listar(p => p.PartidaId > 0);
     }
 
     private async Task Buscar()
     {
         if (!string.IsNullOrWhiteSpace(ValorFiltro))
         {
-            if (Filtro == "PartidasId" && int.TryParse(ValorFiltro, out int id))
-                ListaPartidas = await partidasService.Listar(p => p.PartidasId == id);
+            if (Filtro == "PartidaId" && int.TryParse(ValorFiltro, out int id))
+                ListaPartidas = await partidasService.Listar(p => p.PartidaId == id);
             else if (Filtro == "Jugador1")
                 ListaPartidas = await partidasService.Listar(p => p.Jugador1!.Nombres.ToLower().Contains(ValorFiltro.ToLower()));
             else if (Filtro == "Jugador2")
@@ -111,13 +111,13 @@
         }
         else
         {
-            ListaPartidas = await partidasService.Listar(p => p.PartidasId > 0);
+            ListaPartidas = await partidasService.Listar(p => p.PartidaId > 0);
         }
     }
 
     private async Task Eliminar(int partidasId)
     {
         await partidasService.Eliminar(partidasId);
-        ListaPartidas = await partidasService.Listar(p => p.PartidasId > 0);
+        ListaPartidas = await partidasService.Listar(p => p.PartidaId > 0);
     }
 }

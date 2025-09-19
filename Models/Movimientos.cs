@@ -15,9 +15,8 @@ namespace RegistroJugadores.Models
         public int PosicionColumna { get; set; }
         public DateTime FechaMovimiento { get; set; } = DateTime.UtcNow;
         [ForeignKey(nameof(PartidaId))]
-        public virtual Partidas Partidas { get; set; }
+        public virtual Partidas? Partidas { get; set; }
         [ForeignKey(nameof(JugadorId))]
-        public virtual Jugadores Jugadores { get; set; }
-
+        public virtual Jugadores? Jugadores { get; set; }
     }
 }
