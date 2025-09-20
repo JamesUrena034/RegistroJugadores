@@ -7,6 +7,7 @@ namespace RegistroJugadores.Services
 {
     public class PartidasService(IDbContextFactory<Contexto> DbFactory)
     {
+        private async Task<bool> Existe(int partidaId)
         public async Task<bool> Guardar(Partidas partida)
         {
             if(partida.Jugador1Id == partida.Jugador2Id)
@@ -20,12 +21,10 @@ namespace RegistroJugadores.Services
                 return await Insertar(partida);
             else
                 return await Modificar(partida);
-        }
-
-        public async Task<bool> Existe(int PartidasId)
+        
         {
             await using var contexto = await DbFactory.CreateDbContextAsync();
-            return await contexto.Partidas.AnyAsync(p => p.PartidasId == PartidasId);
+            return await contexto.Partidas.AnyAsync(p => p.PartidaId == partidaId);
         }
 
         private async Task<bool> Insertar(Partidas partida)
@@ -43,7 +42,19 @@ namespace RegistroJugadores.Services
             return await contexto.SaveChangesAsync() > 0;
         }
 
-        public async Task<Partidas?> Buscar(int PartidasId)
+        public async Task<bool> Guardar(Partidas partida)
+        {
+            if (!await Existe(partida.PartidaId))
+            {
+                return await Insertar(partida);
+            }
+            else
+            {
+                return await Modificar(partida);
+            }
+        }
+
+        public async Task<Partidas?> Buscar(int partidaId)
         {
             await using var contexto = await DbFactory.CreateDbContextAsync();
             return await contexto.Partidas
@@ -51,15 +62,15 @@ namespace RegistroJugadores.Services
                 .Include(p => p.Jugador1)
                 .Include(p => p.Jugador2)
                 .Include(p => p.TurnoJugador)
-                .FirstOrDefaultAsync(p => p.PartidasId == PartidasId);
+                .FirstOrDefaultAsync(p => p.PartidaId == partidaId);
         }
 
-        public async Task<bool> Eliminar(int PartidasId)
+        public async Task<bool> Eliminar(int partidaId)
         {
             await using var contexto = await DbFactory.CreateDbContextAsync();
             return await contexto.Partidas
                 .AsNoTracking()
-                .Where(p => p.PartidasId == PartidasId)
+                .Where(p => p.PartidaId == partidaId)
                 .ExecuteDeleteAsync() > 0;
         }
 

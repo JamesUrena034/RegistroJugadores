@@ -30,12 +30,6 @@ else
                         <InputText class="form-control" @bind-Value="Jugador.Nombres" />
                         <ValidationMessage For="() => Jugador.Nombres" />
                     </div>
-
-                    <div class="mb-3">
-                        <label class="form-label"><strong>Partidas</strong></label>
-                        <InputNumber class="form-control" @bind-Value="Jugador.Victorias" />
-                        <ValidationMessage For="() => Jugador.Victorias" />
-                    </div>
                 </div>
 
                 <div class="card-footer d-flex justify-content-center mt-2">
@@ -75,7 +69,9 @@ else
                     <div class="mb-3 ms-3">
                         <p><strong>Jugador Id:</strong> @Jugador.JugadorId</p>
                         <p><strong>Nombres:</strong> @Jugador.Nombres</p>
-                        <p><strong>Partidas:</strong> @Jugador.Victorias</p>
+                        <p><strong>Victorias:</strong> @Jugador.Victorias</p>
+                        <p><strong>Empates:</strong> @Jugador.Empates</p>
+                        <p><strong>Derrotas:</strong> @Jugador.Derrotas</p>
                     </div>
 
                     <div class="modal-footer d-flex justify-content-center">

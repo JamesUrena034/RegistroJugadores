@@ -1,0 +1,118 @@
+﻿@page "/Juego/Seleccion"
+@using RegistroJugadores.Models
+@using RegistroJugadores.Services
+
+@inject JugadoresService jugadoresService
+@inject PartidasService partidasService
+@inject NavigationManager navigationManager
+@rendermode InteractiveServer
+
+<PageTitle>Selección de jugadores - TicTacToe</PageTitle>
+
+<div class="container mx-auto max-w-lg p-6 bg-white rounded-lg shadow-xl text-center">
+    <h2>Seleccione los jugadores</h2>
+
+    @if (!string.IsNullOrEmpty(ErrorMensaje))
+    {
+        <div class="alert alert-danger">@ErrorMensaje</div>
+    }
+
+    <div class="mb-3">
+        <label class="form-label fw-bold">Jugador X (obligatorio)</label>
+        <select class="form-select" @bind="JugadorXId">
+            <option value="">-- Seleccione jugador X --</option>
+            @foreach (var jugador in ListaJugadores)
+            {
+                <option value="@jugador.JugadorId" disabled="@(jugador.JugadorId == JugadorOId)">
+                    @jugador.Nombres
+                </option>
+            }
+        </select>
+    </div>
+
+    <div class="mb-3">
+        <label class="form-label fw-bold">Jugador O</label>
+        <select class="form-select" @bind="JugadorOId" disabled="@(JugadorXId == null)">
+            <option value="">-- Seleccione jugador O --</option>
+            @foreach (var jugador in ListaJugadores)
+            {
+                <option value="@jugador.JugadorId" disabled="@(jugador.JugadorId == JugadorXId)">
+                    @jugador.Nombres
+                </option>
+            }
+        </select>
+    </div>
+
+    <button class="btn btn-success btn-lg mt-4"
+            disabled="@(JugadorXId == null || JugadorOId == JugadorXId)"
+            @onclick="IniciarPartida">
+        Iniciar Partida
+    </button>
+</div>
+
+@code {
+    private List<Jugadores> ListaJugadores = new();
+    private string ErrorMensaje = string.Empty;
+
+    private int? _jugadorXId;
+    private int? JugadorXId
+    {
+        get => _jugadorXId;
+        set
+        {
+            _jugadorXId = value;
+
+            // Reinicia jugador O si estaba seleccionado igual
+            if (JugadorOId == _jugadorXId)
+                JugadorOId = null;
+
+            StateHasChanged();
+        }
+    }
+
+    private int? _jugadorOId;
+    private int? JugadorOId
+    {
+        get => _jugadorOId;
+        set
+        {
+            _jugadorOId = value;
+
+            // Reinicia jugador X si estaba seleccionado igual
+            if (JugadorXId == _jugadorOId)
+                JugadorXId = null;
+
+            StateHasChanged();
+        }
+    }
+
+    protected override async Task OnInitializedAsync()
+    {
+        ListaJugadores = await jugadoresService.Listar(j => j.JugadorId > 0);
+    }
+
+    private async Task IniciarPartida()
+    {
+        ErrorMensaje = string.Empty;
+
+        if (JugadorXId == null)
+        {
+            ErrorMensaje = "Debe seleccionar un jugador X.";
+            return;
+        }
+
+        var partida = new Partidas
+        {
+            Jugador1Id = JugadorXId.Value,
+            Jugador2Id = JugadorOId,
+            EstadoPartida = JugadorOId == null ? "Pendiente" : "En curso",
+            TurnoJugadorId = JugadorXId.Value,
+            EstadoTablero = "---------",
+            FechaInicio = DateTime.UtcNow
+        };
+
+        await partidasService.Guardar(partida);
+
+        navigationManager.NavigateTo($"/Juego/Tablero/{partida.PartidaId}");
+    }
+}
