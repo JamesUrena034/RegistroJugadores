@@ -28,6 +28,7 @@
                         <option value="Jugador2">Jugador2</option>
                         <option value="Ganador">Ganador</option>
                         <option value="EstadoPartida">Estado Partida</option>
+                        <option value="EstadoPartida">Estado Tablero</option>
                     </InputSelect>
                 </div>
                 <div class="col-6">
@@ -48,6 +49,7 @@
                         <th>Jugador 1</th>
                         <th>Jugador 2</th>
                         <th>Estado</th>
+                        <th>Estado Tablero</th>
                         <th>Ganador</th>
                         <th>Fecha Inicio</th>
                         <th>Fecha Fin</th>
@@ -63,7 +65,8 @@
                             <td>@partida.Jugador1?.Nombres</td>
                             <td>@partida.Jugador2?.Nombres</td>
                             <td>@partida.EstadoPartida</td>
-                            <td>@partida.Ganador?.Nombres</td>
+                            <td>@partida.EstadoTablero</td>
+                            <td>@(partida.Ganador != null ? partida.Ganador.Nombres : "Empate")</td>
                             <td>@partida.FechaInicio.ToString("dd/MM/yyyy HH:mm")</td>
                             <td>@(partida.FechaFin?.ToString("dd/MM/yyyy HH:mm") ?? "En curso")</td>
                             <td class="text-center">
