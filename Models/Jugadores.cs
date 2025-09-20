@@ -10,7 +10,6 @@ public class Jugadores
 
     [Required(ErrorMessage = "El campo 'Nombres' es obligatorio.")]
     public string Nombres { get; set; } = null!;
-
     public int Victorias { get; set; } = 0;
     public int Derrotas { get; set; } = 0;
     public int Empates { get; set; } = 0;
