@@ -1,0 +1,115 @@
+﻿@page "/Juego/Seleccion"
+@using RegistroJugadores.BlazorWasm.Models.ApiDtos
+@using RegistroJugadores.Services
+@using RegistroJugadores.BlazorWasm.Shared
+
+@inject IPartidasApiService PartidasApi
+@inject NavigationManager Nav
+@inject HttpClient Http
+
+<PageTitle>TicTacToe - Selección</PageTitle>
+
+<div class="container mx-auto max-w-lg p-6 bg-white rounded-lg shadow-xl text-center">
+    <h2 class="mb-4">Tic Tac Toe</h2>
+
+    @if (!string.IsNullOrEmpty(Mensaje))
+    {
+        <div class="alert alert-info">@Mensaje</div>
+    }
+
+    <div class="border rounded p-3 mb-4">
+        <h4>Iniciar nueva partida</h4>
+        <div class="mb-3">
+            <label class="form-label fw-bold">Jugador X</label>
+            <select class="form-select" @bind="JugadorXId">
+                <option value="">-- Seleccione jugador X --</option>
+                @foreach (var jugador in ListaJugadores)
+                {
+                    <option value="@jugador.JugadorId">@jugador.Nombres</option>
+                }
+            </select>
+        </div>
+        <button class="btn btn-success w-100" @onclick="IniciarPartida" disabled="@(JugadorXId == null)">
+            Iniciar Partida
+        </button>
+    </div>
+
+    <div class="border rounded p-3">
+        <h4>Buscar partida existente</h4>
+        <div class="mb-3">
+            <label class="form-label fw-bold">ID de la partida</label>
+            <input type="number" class="form-control" @bind="PartidaIdBuscar" placeholder="Ejemplo: 5" />
+        </div>
+        <button class="btn btn-primary w-100" @onclick="BuscarYUnirse">
+            Buscar y Unirse
+        </button>
+    </div>
+</div>
+
+@code {
+    private List<JugadorResponse> ListaJugadores = new();
+    private int? JugadorXId;
+    private int PartidaIdBuscar;
+    private string Mensaje = string.Empty;
+
+    protected override async Task OnInitializedAsync()
+    {
+        Http.BaseAddress = new Uri("https://gestionhuacalesapi.azurewebsites.net/");
+        ListaJugadores = await Http.GetFromJsonAsync<List<JugadorResponse>>("api/Jugadores") ?? new();
+    }
+
+    private async Task IniciarPartida()
+    {
+        if (JugadorXId == null)
+        {
+            Mensaje = "Debe seleccionar un jugador X.";
+            return;
+        }
+
+        var res = await PartidasApi.PostPartida(JugadorXId.Value, null);
+        if (res is Resource<PartidaResponse>.Success ok)
+        {
+            var p = ok.Data;
+            Nav.NavigateTo($"/game?partidaId={p.PartidaId}&jugador=X&jugadorX={JugadorXId}");
+        }
+        else
+        {
+            Mensaje = res.Message ?? "Error al crear la partida.";
+        }
+    }
+
+    private async Task BuscarYUnirse()
+    {
+        if (PartidaIdBuscar <= 0)
+        {
+            Mensaje = "Debe ingresar un ID de partida válido.";
+            return;
+        }
+
+        var res = await PartidasApi.GetPartidaAsync(PartidaIdBuscar);
+        if (res is not Resource<PartidaResponse>.Success partida)
+        {
+            Mensaje = "No se encontró la partida.";
+            return;
+        }
+
+        var jugador1 = partida.Data.Jugador1Id;
+        var jugadorLibre = ListaJugadores.FirstOrDefault(j => j.JugadorId != jugador1);
+        if (jugadorLibre == null)
+        {
+            Mensaje = "No hay jugadores disponibles.";
+            return;
+        }
+
+        var unirRes = await PartidasApi.UnirseAPartidaAsync(PartidaIdBuscar, jugador1, jugadorLibre.JugadorId);
+
+        if (unirRes is Resource<PartidaResponse>.Success)
+        {
+            Nav.NavigateTo($"/game?partidaId={PartidaIdBuscar}&jugador=O&jugadorO={jugadorLibre.JugadorId}");
+        }
+        else
+        {
+            Mensaje = unirRes.Message ?? "Error al unirse a la partida.";
+        }
+    }
+}

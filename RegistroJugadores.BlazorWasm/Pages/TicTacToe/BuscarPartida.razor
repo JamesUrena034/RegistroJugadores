@@ -1,0 +1,56 @@
+﻿@page "/Juego/Buscar"
+@using RegistroJugadores.BlazorWasm.Models.ApiDtos
+@using RegistroJugadores.Services
+@using RegistroJugadores.BlazorWasm.Shared
+
+@inject IPartidasApiService PartidasApi
+@inject NavigationManager Nav
+
+<PageTitle>Buscar partida - TicTacToe</PageTitle>
+
+<div class="container mx-auto max-w-lg p-6 bg-white rounded-lg shadow-xl text-center">
+    <h2>Unirse a una partida existente</h2>
+
+    @if (!string.IsNullOrEmpty(Mensaje))
+    {
+        <div class="alert alert-info">@Mensaje</div>
+    }
+
+    <div class="mb-3">
+        <label class="form-label fw-bold">ID de la partida</label>
+        <input type="number" class="form-control" @bind="PartidaId" placeholder="Ejemplo: 5" />
+    </div>
+
+    <div class="mb-3">
+        <label class="form-label fw-bold">Tu ID de jugador</label>
+        <input type="number" class="form-control" @bind="JugadorId" placeholder="Ejemplo: 2" />
+    </div>
+
+    <button class="btn btn-primary btn-lg mt-4" @onclick="BuscarYUnirse">
+        Buscar y Unirse
+    </button>
+</div>
+
+@code {
+    private int PartidaId;
+    private int JugadorId;
+    private string Mensaje = string.Empty;
+
+    private async Task BuscarYUnirse()
+    {
+        Mensaje = "Buscando partida...";
+        var res = await PartidasApi.GetPartidaAsync(PartidaId);
+
+        if (res is not Resource<PartidaResponse>.Success partida)
+        {
+            Mensaje = "No se encontró la partida.";
+            return;
+        }
+
+        if (partida.Data.Jugador2Id is not null)
+        {
+            Mensaje = "Esta partida ya tiene dos jugadores.";
+            return;
+        }
+    }
+}
