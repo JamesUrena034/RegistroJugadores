@@ -15,12 +15,12 @@ namespace RegistroJugadores.Migrations
                 name: "Jugadores",
                 columns: table => new
                 {
-                    JugadorId = table.Column<int>(type: "int", nullable: false)
-                        .Annotation("SqlServer:Identity", "1, 1"),
-                    Nombres = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    Victorias = table.Column<int>(type: "int", nullable: false),
-                    Derrotas = table.Column<int>(type: "int", nullable: false),
-                    Empates = table.Column<int>(type: "int", nullable: false)
+                    JugadorId = table.Column<int>(type: "INTEGER", nullable: false)
+                        .Annotation("Sqlite:Autoincrement", true),
+                    Nombres = table.Column<string>(type: "TEXT", nullable: false),
+                    Victorias = table.Column<int>(type: "INTEGER", nullable: false),
+                    Derrotas = table.Column<int>(type: "INTEGER", nullable: false),
+                    Empates = table.Column<int>(type: "INTEGER", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -31,16 +31,16 @@ namespace RegistroJugadores.Migrations
                 name: "Partidas",
                 columns: table => new
                 {
-                    PartidaId = table.Column<int>(type: "int", nullable: false)
-                        .Annotation("SqlServer:Identity", "1, 1"),
-                    Jugador1Id = table.Column<int>(type: "int", nullable: false),
-                    Jugador2Id = table.Column<int>(type: "int", nullable: false),
-                    EstadoPartida = table.Column<string>(type: "nvarchar(20)", maxLength: 20, nullable: false),
-                    GanadorId = table.Column<int>(type: "int", nullable: true),
-                    TurnoJugadorId = table.Column<int>(type: "int", nullable: false),
-                    EstadoTablero = table.Column<string>(type: "nvarchar(9)", maxLength: 9, nullable: false),
-                    FechaInicio = table.Column<DateTime>(type: "datetime2", nullable: false),
-                    FechaFin = table.Column<DateTime>(type: "datetime2", nullable: true)
+                    PartidaId = table.Column<int>(type: "INTEGER", nullable: false)
+                        .Annotation("Sqlite:Autoincrement", true),
+                    Jugador1Id = table.Column<int>(type: "INTEGER", nullable: false),
+                    Jugador2Id = table.Column<int>(type: "INTEGER", nullable: false),
+                    EstadoPartida = table.Column<string>(type: "TEXT", maxLength: 20, nullable: false),
+                    GanadorId = table.Column<int>(type: "INTEGER", nullable: true),
+                    TurnoJugadorId = table.Column<int>(type: "INTEGER", nullable: false),
+                    EstadoTablero = table.Column<string>(type: "TEXT", maxLength: 9, nullable: false),
+                    FechaInicio = table.Column<DateTime>(type: "TEXT", nullable: false),
+                    FechaFin = table.Column<DateTime>(type: "TEXT", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -75,13 +75,13 @@ namespace RegistroJugadores.Migrations
                 name: "Movimientos",
                 columns: table => new
                 {
-                    MovimientoId = table.Column<int>(type: "int", nullable: false)
-                        .Annotation("SqlServer:Identity", "1, 1"),
-                    PartidaId = table.Column<int>(type: "int", nullable: false),
-                    JugadorId = table.Column<int>(type: "int", nullable: false),
-                    PosicionFila = table.Column<int>(type: "int", nullable: false),
-                    PosicionColumna = table.Column<int>(type: "int", nullable: false),
-                    FechaMovimiento = table.Column<DateTime>(type: "datetime2", nullable: false)
+                    MovimientoId = table.Column<int>(type: "INTEGER", nullable: false)
+                        .Annotation("Sqlite:Autoincrement", true),
+                    PartidaId = table.Column<int>(type: "INTEGER", nullable: false),
+                    JugadorId = table.Column<int>(type: "INTEGER", nullable: false),
+                    PosicionFila = table.Column<int>(type: "INTEGER", nullable: false),
+                    PosicionColumna = table.Column<int>(type: "INTEGER", nullable: false),
+                    FechaMovimiento = table.Column<DateTime>(type: "TEXT", nullable: false)
                 },
                 constraints: table =>
                 {
