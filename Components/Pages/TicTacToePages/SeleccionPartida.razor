@@ -1,118 +1,113 @@
-﻿@page "/Juego/Seleccion"
-@using RegistroJugadores.Models
-@using RegistroJugadores.Services
+﻿@page "/SeleccionPartida"
 
-@inject JugadoresService jugadoresService
-@inject PartidasService partidasService
-@inject NavigationManager navigationManager
 @rendermode InteractiveServer
+@using RegistroJugadores.Models.ApiDtos
+@using RegistroJugadores.Shared
+@using RegistroJugadoresServer.Services
+@inject IPartidasApiService PartidasApi
+@inject NavigationManager Nav
 
-<PageTitle>Selección de jugadores - TicTacToe</PageTitle>
+<PageTitle>Unirse a una partida</PageTitle>
 
-<div class="container mx-auto max-w-lg p-6 bg-white rounded-lg shadow-xl text-center">
-    <h2>Seleccione los jugadores</h2>
+<div class="container mt-5 p-4 bg-white rounded shadow text-center" style="max-width:600px;">
+    <h2 class="mb-4">Unirse a una partida existente</h2>
 
-    @if (!string.IsNullOrEmpty(ErrorMensaje))
+    @if (Estado is Resource<string>.Loading)
     {
-        <div class="alert alert-danger">@ErrorMensaje</div>
+        <div class="alert alert-info">Conectando con el servidor...</div>
+    }
+    else if (Estado is Resource<string>.Error e)
+    {
+        <div class="alert alert-danger">@e.Message</div>
+    }
+    else if (Estado is Resource<string>.Success s && !string.IsNullOrEmpty(s.Data))
+    {
+        <div class="alert alert-success">@s.Data</div>
     }
 
     <div class="mb-3">
-        <label class="form-label fw-bold">Jugador X (obligatorio)</label>
-        <select class="form-select" @bind="JugadorXId">
-            <option value="">-- Seleccione jugador X --</option>
-            @foreach (var jugador in ListaJugadores)
-            {
-                <option value="@jugador.JugadorId" disabled="@(jugador.JugadorId == JugadorOId)">
-                    @jugador.Nombres
-                </option>
-            }
+        <label class="form-label fw-bold">ID de la partida</label>
+        <input type="number" class="form-control" @bind="PartidaId" placeholder="Ejemplo: 5" />
+    </div>
+
+    <div class="mb-3">
+        <label class="form-label fw-bold">Selecciona jugador</label>
+        <select class="form-select" @bind="RolSeleccionado">
+            <option value="">-- Selecciona jugador --</option>
+            <option value="X">Jugador X</option>
+            <option value="O">Jugador O</option>
         </select>
     </div>
 
     <div class="mb-3">
-        <label class="form-label fw-bold">Jugador O</label>
-        <select class="form-select" @bind="JugadorOId" disabled="@(JugadorXId == null)">
-            <option value="">-- Seleccione jugador O --</option>
-            @foreach (var jugador in ListaJugadores)
-            {
-                <option value="@jugador.JugadorId" disabled="@(jugador.JugadorId == JugadorXId)">
-                    @jugador.Nombres
-                </option>
-            }
-        </select>
+        <label class="form-label fw-bold">Tu ID de jugador</label>
+        <input type="number" class="form-control" @bind="JugadorId" placeholder="Ejemplo: 3" />
     </div>
 
-    <button class="btn btn-success btn-lg mt-4"
-            disabled="@(JugadorXId == null || JugadorOId == JugadorXId)"
-            @onclick="IniciarPartida">
-        Iniciar Partida
+    <button class="btn btn-primary w-100" @onclick="UnirsePartida" disabled="@Cargando">
+        @(Cargando ? "Conectando..." : "Unirse a la partida")
     </button>
 </div>
 
 @code {
-    private List<Jugadores> ListaJugadores = new();
-    private string ErrorMensaje = string.Empty;
+    private int PartidaId;
+    private string RolSeleccionado = "";
+    private int JugadorId;
+    private bool Cargando;
+    private Resource<string> Estado = new Resource<string>.Success("");
 
-    private int? _jugadorXId;
-    private int? JugadorXId
+    private async Task UnirsePartida()
     {
-        get => _jugadorXId;
-        set
+        if (PartidaId <= 0)
         {
-            _jugadorXId = value;
-
-            // Reinicia jugador O si estaba seleccionado igual
-            if (JugadorOId == _jugadorXId)
-                JugadorOId = null;
-
-            StateHasChanged();
-        }
-    }
-
-    private int? _jugadorOId;
-    private int? JugadorOId
-    {
-        get => _jugadorOId;
-        set
-        {
-            _jugadorOId = value;
-
-            // Reinicia jugador X si estaba seleccionado igual
-            if (JugadorXId == _jugadorOId)
-                JugadorXId = null;
-
-            StateHasChanged();
-        }
-    }
-
-    protected override async Task OnInitializedAsync()
-    {
-        ListaJugadores = await jugadoresService.Listar(j => j.JugadorId > 0);
-    }
-
-    private async Task IniciarPartida()
-    {
-        ErrorMensaje = string.Empty;
-
-        if (JugadorXId == null)
-        {
-            ErrorMensaje = "Debe seleccionar un jugador X.";
+            Estado = new Resource<string>.Error("Debe ingresar un ID válido.");
             return;
         }
 
-        var partida = new Partidas
+        if (string.IsNullOrEmpty(RolSeleccionado))
         {
-            Jugador1Id = JugadorXId.Value,
-            Jugador2Id = JugadorOId,
-            EstadoPartida = JugadorOId == null ? "Pendiente" : "En curso",
-            TurnoJugadorId = JugadorXId.Value,
-            EstadoTablero = "---------",
-            FechaInicio = DateTime.UtcNow
-        };
+            Estado = new Resource<string>.Error("Debe seleccionar si será jugador X u O.");
+            return;
+        }
 
-        await partidasService.Guardar(partida);
+        if (JugadorId <= 0)
+        {
+            Estado = new Resource<string>.Error("Debe ingresar su ID de jugador.");
+            return;
+        }
 
-        navigationManager.NavigateTo($"/Juego/Tablero/{partida.PartidaId}");
+        try
+        {
+            Cargando = true;
+            Estado = new Resource<string>.Loading();
+
+            var result = await PartidasApi.UnirsePorRolAsync(PartidaId, JugadorId, RolSeleccionado);
+
+            switch (result)
+            {
+                case Resource<PartidaResponse>.Success s:
+                    Estado = new Resource<string>.Success($"Te has unido correctamente como jugador {RolSeleccionado}.");
+                    await Task.Delay(1200);
+                    Nav.NavigateTo($"/GameBoard?partidaId={PartidaId}&jugador={RolSeleccionado}&jugadorId={JugadorId}");
+                    break;
+
+                case Resource<PartidaResponse>.Error e:
+                    Estado = new Resource<string>.Error(e.Message ?? "No se pudo unir a la partida.");
+                    break;
+
+                default:
+                    Estado = new Resource<string>.Error("No se recibió respuesta del servidor.");
+                    break;
+            }
+        }
+        catch (Exception ex)
+        {
+            Estado = new Resource<string>.Error($"Error inesperado: {ex.Message}");
+        }
+        finally
+        {
+            Cargando = false;
+            StateHasChanged();
+        }
     }
 }

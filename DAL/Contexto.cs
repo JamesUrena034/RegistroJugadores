@@ -1,5 +1,7 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using RegistroJugadores.Models;
+using System.Collections.Generic;
 using RegistroJugadores.Models;
+using Microsoft.EntityFrameworkCore;
 
 namespace RegistroJugadores.DAL
 {

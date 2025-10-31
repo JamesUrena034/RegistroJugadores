@@ -1,191 +1,206 @@
-﻿@page "/Juego/Tablero/{PartidaId:int}"
-@using RegistroJugadores.Models
-@using RegistroJugadores.Services
-
-@inject PartidasService partidasService
-@inject JugadoresService jugadoresService
-@inject MovimientosService movimientosService
-@inject NavigationManager navigationManager
+﻿@page "/GameBoard"
 @rendermode InteractiveServer
+@using RegistroJugadores.Models.ApiDtos
+@using RegistroJugadores.Shared
+@using RegistroJugadoresServer.Services
+@inject IPartidasApiService PartidasApi
+@inject IMovimientosApiService MovimientosApi
+@inject NavigationManager Nav
 
-<div class="container mx-auto max-w-lg p-6 bg-white rounded-lg shadow-xl text-center">
-    <div class="game-container">
-        <div class="game-screen">
-            <h2 class="game-status">@GameStatus</h2>
+<PageTitle>Tic Tac Toe</PageTitle>
 
+<div class="d-flex justify-content-center align-items-center vh-100">
+    <div class="text-center">
+        <h2>Partida #@PartidaId - Jugador @JugadorActual</h2>
+
+        <div class="d-flex justify-content-center mt-4">
             <div class="game-board">
                 @for (var i = 0; i < 9; i++)
                 {
-                    var cellIndex = i;
-                    <button class="cell @GetPlayerClass(board[cellIndex])"
-                            @onclick="() => HandleCellClick(cellIndex)"
-                            disabled="@(board[cellIndex] != null || winner != null || esEmpate)">
-                        @board[cellIndex]?.ToString()
+                    var fila = i / 3;
+                    var col = i % 3;
+                    <button class="btn btn-outline-dark fs-2 fw-bold m-1"
+                            style="width: 90px; height: 90px;"
+                            @onclick="() => RealizarMovimiento(fila, col)"
+                            disabled="@(!PuedeJugar(fila, col))">
+                        @Tablero[fila, col]
                     </button>
                 }
             </div>
-
-            <button class="btn btn-secondary mt-4" @onclick="ReiniciarJuego">
-                Reiniciar Juego
-            </button>
         </div>
+
+        <div class="mt-4">
+            <h4>@EstadoTexto</h4>
+        </div>
+
+        <button class="btn btn-secondary mt-3" @onclick="Salir">Salir</button>
     </div>
 </div>
 
 @code {
-    [Parameter]
-    public int PartidaId { get; set; }
-
-    private Partidas? partida;
-    private string? jugador1Nombre;
-    private string? jugador2Nombre;
-
-    private enum PlayerType { X, O }
-    private PlayerType?[] board = new PlayerType?[9];
-    private PlayerType _currentPlayerType = PlayerType.X;
-    private PlayerType? winner;
-    private bool esEmpate;
-
-    private string GameStatus
-    {
-        get
-        {
-            if (partida == null) return "Cargando...";
-            if (partida.EstadoPartida == "Pendiente") return "⌛ Esperando Jugador O...";
-            if (winner != null) return $"🏆 ¡Ganador: {GetNombreJugador(winner.Value)}!";
-            if (esEmpate) return "🤝 ¡Es un empate!";
-            return $"Turno de: {GetNombreJugador(_currentPlayerType)}";
-        }
-    }
+    private int PartidaId;
+    private string JugadorActual = "";
+    private int JugadorId;
+    private char[,] Tablero = new char[3, 3];
+    private string EstadoTexto = "Cargando partida...";
+    private System.Timers.Timer? Timer;
+    private readonly SemaphoreSlim _lock = new(1, 1);
+    private bool EnJuego = true;
 
     protected override async Task OnInitializedAsync()
     {
-        partida = await partidasService.Buscar(PartidaId);
+        var uri = Nav.ToAbsoluteUri(Nav.Uri);
+        var query = Microsoft.AspNetCore.WebUtilities.QueryHelpers.ParseQuery(uri.Query);
 
-        if (partida == null)
+        if (!query.TryGetValue("partidaId", out var idStr) || !int.TryParse(idStr, out PartidaId))
         {
-            navigationManager.NavigateTo("/Juego/Seleccion");
+            EstadoTexto = "No se recibió un ID de partida válido.";
             return;
         }
 
-        var jugador1 = await jugadoresService.Buscar(partida.Jugador1Id);
-        jugador1Nombre = jugador1?.Nombres;
+        if (query.TryGetValue("jugador", out var rol))
+            JugadorActual = rol!;
+        if (query.TryGetValue("jugadorId", out var idJugador))
+            int.TryParse(idJugador!, out JugadorId);
 
-        if (partida.Jugador2Id.HasValue)
-        {
-            var jugador2 = await jugadoresService.Buscar(partida.Jugador2Id.Value);
-            jugador2Nombre = jugador2?.Nombres;
-        }
+        await CargarTablero();
 
-        board = partida.EstadoTablero.Select(c =>
-            c == 'X' ? PlayerType.X : c == 'O' ? PlayerType.O : (PlayerType?)null
-        ).ToArray();
-
-        _currentPlayerType = PlayerType.X;
+        Timer = new System.Timers.Timer(2000);
+        Timer.Elapsed += async (_, _) => await InvokeAsync(CargarTablero);
+        Timer.Start();
     }
 
-    private async Task HandleCellClick(int index)
+    private async Task CargarTablero()
     {
-        if (board[index] != null || winner != null || esEmpate || partida == null)
-            return;
-
-        board[index] = _currentPlayerType;
-
-        var movimiento = new Movimientos
+        await _lock.WaitAsync();
+        try
         {
-            PartidaId = partida.PartidaId,
-            JugadorId = _currentPlayerType == PlayerType.X ? partida.Jugador1Id : partida.Jugador2Id ?? partida.Jugador1Id,
-            PosicionFila = index / 3,
-            PosicionColumna = index % 3,
-            FechaMovimiento = DateTime.UtcNow
-        };
+            var movimientos = await MovimientosApi.GetMovimientosAsync(PartidaId);
+            InicializarTablero();
 
-        await movimientosService.Guardar(movimiento);
-
-        partida.EstadoTablero = string.Concat(board.Select(c => c == null ? '-' : c == PlayerType.X ? 'X' : 'O'));
-
-        winner = VerificarGanador();
-        if (winner != null)
-        {
-            await FinalizarPartida(winner.Value);
-            return;
-        }
-
-        esEmpate = board.All(c => c != null);
-        if (esEmpate)
-        {
-            await FinalizarPartida(null);
-            return;
-        }
-
-        // Cambiar turno
-        if (partida.Jugador2Id.HasValue)
-        {
-            _currentPlayerType = _currentPlayerType == PlayerType.X ? PlayerType.O : PlayerType.X;
-        }
-
-        await partidasService.Guardar(partida);
-    }
-
-    private PlayerType? VerificarGanador()
-    {
-        var lineasGanadoras = new[]
-        {
-            new[] {0,1,2}, new[] {3,4,5}, new[] {6,7,8},
-            new[] {0,3,6}, new[] {1,4,7}, new[] {2,5,8},
-            new[] {0,4,8}, new[] {2,4,6}
-        };
-
-        foreach (var linea in lineasGanadoras)
-        {
-            if (board[linea[0]].HasValue && board[linea[0]] == board[linea[1]] && board[linea[0]] == board[linea[2]])
+            if (movimientos is Resource<List<MovimientosResponse>>.Success ok)
             {
-                return board[linea[0]];
+                foreach (var m in ok.Data)
+                {
+                    if (m.PosicionFila is >= 0 and < 3 && m.PosicionColumna is >= 0 and < 3)
+                        Tablero[m.PosicionFila, m.PosicionColumna] = m.Jugador == "X" ? 'X' : 'O';
+                }
+
+                var ganador = DetectarGanador();
+                if (ganador != null)
+                {
+                    EstadoTexto = $"🏆 ¡Ganador: {ganador}!";
+                    EnJuego = false;
+                }
+                else if (DetectarEmpate())
+                {
+                    EstadoTexto = "🤝 ¡Empate!";
+                    EnJuego = false;
+                }
+                else
+                {
+                    // Calcular turno real basado en la cantidad de movimientos
+                    int countX = ok.Data.Count(m => m.Jugador == "X");
+                    int countO = ok.Data.Count(m => m.Jugador == "O");
+                    string turnoActual = countX == countO ? "X" : "O";
+
+                    EstadoTexto = turnoActual == JugadorActual
+                        ? $"👉 Es tu turno ({turnoActual})"
+                        : $"⏳ Esperando turno del jugador {turnoActual}";
+                }
+
+                StateHasChanged();
             }
         }
+        finally
+        {
+            _lock.Release();
+        }
+    }
 
+    private async Task RealizarMovimiento(int fila, int col)
+    {
+        if (!PuedeJugar(fila, col)) return;
+
+        await _lock.WaitAsync();
+        try
+        {
+            var movimiento = new MovimientosRequest
+            {
+                PartidaId = PartidaId,
+                Jugador = JugadorActual,
+                PosicionFila = fila,
+                PosicionColumna = col
+            };
+
+            var resultado = await MovimientosApi.PostMovimientoAsync(movimiento);
+
+            if (resultado is Resource<bool>.Success s && s.Data)
+            {
+                Tablero[fila, col] = JugadorActual[0];
+                EstadoTexto = $"Movimiento realizado ({JugadorActual})";
+            }
+            else if (resultado is Resource<bool>.Error e)
+            {
+                EstadoTexto = e.Message ?? "No se pudo registrar el movimiento.";
+            }
+
+            StateHasChanged();
+        }
+        catch (Exception ex)
+        {
+            EstadoTexto = $"Error: {ex.Message}";
+        }
+        finally
+        {
+            _lock.Release();
+        }
+    }
+
+    private bool PuedeJugar(int fila, int col)
+        => EnJuego && Tablero[fila, col] == '-';
+
+    private void InicializarTablero()
+    {
+        for (int i = 0; i < 3; i++)
+            for (int j = 0; j < 3; j++)
+                if (Tablero[i, j] == '\0')
+                    Tablero[i, j] = '-';
+    }
+
+    private string? DetectarGanador()
+    {
+        for (int i = 0; i < 3; i++)
+        {
+            if (Tablero[i, 0] != '-' && Tablero[i, 0] == Tablero[i, 1] && Tablero[i, 1] == Tablero[i, 2])
+                return Tablero[i, 0].ToString();
+            if (Tablero[0, i] != '-' && Tablero[0, i] == Tablero[1, i] && Tablero[1, i] == Tablero[2, i])
+                return Tablero[0, i].ToString();
+        }
+        if (Tablero[0, 0] != '-' && Tablero[0, 0] == Tablero[1, 1] && Tablero[1, 1] == Tablero[2, 2])
+            return Tablero[0, 0].ToString();
+        if (Tablero[0, 2] != '-' && Tablero[0, 2] == Tablero[1, 1] && Tablero[1, 1] == Tablero[2, 0])
+            return Tablero[0, 2].ToString();
         return null;
     }
 
-    private async Task FinalizarPartida(PlayerType? ganador)
+    private bool DetectarEmpate()
     {
-        if (partida == null) return;
-
-        partida.FechaFin = DateTime.UtcNow;
-        partida.EstadoPartida = "Finalizada";
-
-        var jugador1 = await jugadoresService.Buscar(partida.Jugador1Id);
-        var jugador2 = partida.Jugador2Id.HasValue ? await jugadoresService.Buscar(partida.Jugador2Id.Value) : null;
-
-        if (ganador == PlayerType.X)
+        foreach (var c in Tablero)
         {
-            partida.GanadorId = jugador1.JugadorId;
-            jugador1.Victorias++;
-            if (jugador2 != null) jugador2.Derrotas++;
+            if (c == '-') return false;
         }
-        else if (ganador == PlayerType.O && jugador2 != null)
-        {
-            partida.GanadorId = jugador2.JugadorId;
-            jugador2.Victorias++;
-            jugador1.Derrotas++;
-        }
-        else
-        {
-            jugador1.Empates++;
-            if (jugador2 != null) jugador2.Empates++;
-        }
-
-        await partidasService.Guardar(partida);
-        await jugadoresService.Guardar(jugador1);
-        if (jugador2 != null) await jugadoresService.Guardar(jugador2);
+        return DetectarGanador() == null;
     }
 
-    private void ReiniciarJuego()
+    private void Salir()
     {
-        navigationManager.NavigateTo("/Juego/Seleccion");
+        Timer?.Stop();
+        Nav.NavigateTo("/SeleccionPartida");
     }
 
-    private string GetPlayerClass(PlayerType? player) => player == PlayerType.X ? "player-x" : player == PlayerType.O ? "player-o" : "";
-
-    private string GetNombreJugador(PlayerType player) => player == PlayerType.X ? jugador1Nombre ?? "Jugador X" : jugador2Nombre ?? "Jugador O";
+    public void Dispose()
+    {
+        Timer?.Dispose();
+    }
 }
